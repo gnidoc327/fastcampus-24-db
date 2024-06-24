@@ -5,6 +5,7 @@ import com.onion.backend.dto.WriteArticleDto;
 import com.onion.backend.entity.Article;
 import com.onion.backend.entity.Board;
 import com.onion.backend.entity.User;
+import com.onion.backend.exception.ForbiddenException;
 import com.onion.backend.exception.RateLimitException;
 import com.onion.backend.exception.ResourceNotFoundException;
 import com.onion.backend.repository.ArticleRepository;
@@ -87,6 +88,9 @@ public class ArticleService {
         if (article.isEmpty()) {
             throw new ResourceNotFoundException("article not found");
         }
+        if (article.get().getAuthor() != author.get()) {
+            throw new ForbiddenException("article author different");
+        }
         if (!this.isCanEditArticle()) {
             throw new RateLimitException("article not edited by rate limit");
         }
@@ -98,6 +102,32 @@ public class ArticleService {
         }
         articleRepository.save(article.get());
         return article.get();
+    }
+
+    public boolean deleteArticle(Long boardId, Long articleId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Optional<User> author = userRepository.findByUsername(userDetails.getUsername());
+        Optional<Board> board = boardRepository.findById(boardId);
+        if (author.isEmpty()) {
+            throw new ResourceNotFoundException("author not found");
+        }
+        if (board.isEmpty()) {
+            throw new ResourceNotFoundException("board not found");
+        }
+        Optional<Article> article = articleRepository.findById(articleId);
+        if (article.isEmpty()) {
+            throw new ResourceNotFoundException("article not found");
+        }
+        if (article.get().getAuthor() != author.get()) {
+            throw new ForbiddenException("article author different");
+        }
+        if (!this.isCanEditArticle()) {
+            throw new RateLimitException("article not edited by rate limit");
+        }
+        article.get().setIsDeleted(true);
+        articleRepository.save(article.get());
+        return true;
     }
 
     private boolean isCanWriteArticle() {
@@ -114,7 +144,7 @@ public class ArticleService {
         return this.isDifferenceMoreThanFiveMinutes(latestArticle.getUpdatedDate());
     }
 
-    public boolean isDifferenceMoreThanFiveMinutes(LocalDateTime localDateTime) {
+    private boolean isDifferenceMoreThanFiveMinutes(LocalDateTime localDateTime) {
         LocalDateTime dateAsLocalDateTime = new Date().toInstant()
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
