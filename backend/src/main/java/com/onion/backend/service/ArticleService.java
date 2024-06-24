@@ -139,6 +139,9 @@ public class ArticleService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Article latestArticle = articleRepository.findLatestArticleByAuthorUsernameOrderByCreatedDate(userDetails.getUsername());
+        if (latestArticle == null) {
+            return true;
+        }
         return this.isDifferenceMoreThanFiveMinutes(latestArticle.getCreatedDate());
     }
 
@@ -146,6 +149,9 @@ public class ArticleService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         Article latestArticle = articleRepository.findLatestArticleByAuthorUsernameOrderByUpdatedDate(userDetails.getUsername());
+        if (latestArticle == null || latestArticle.getUpdatedDate() == null) {
+            return true;
+        }
         return this.isDifferenceMoreThanFiveMinutes(latestArticle.getUpdatedDate());
     }
 
