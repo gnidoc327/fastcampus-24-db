@@ -1,5 +1,7 @@
 package com.onion.backend.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onion.backend.dto.EditArticleDto;
 import com.onion.backend.dto.WriteArticleDto;
 import com.onion.backend.dto.WriteCommentDto;
@@ -40,12 +42,19 @@ public class CommentService {
 
     private final UserRepository userRepository;
 
+    private final ElasticSearchService elasticSearchService;
+
+    private final ObjectMapper objectMapper;
+
     @Autowired
-    public CommentService(BoardRepository boardRepository, ArticleRepository articleRepository, UserRepository userRepository, CommentRepository commentRepository) {
+    public CommentService(BoardRepository boardRepository, ArticleRepository articleRepository, UserRepository userRepository, CommentRepository commentRepository,
+                          ElasticSearchService elasticSearchService, ObjectMapper objectMapper) {
         this.boardRepository = boardRepository;
         this.articleRepository = articleRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
+        this.elasticSearchService = elasticSearchService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -178,7 +187,8 @@ public class CommentService {
     }
 
     @Async
-    protected CompletableFuture<Article> getArticle(Long boardId, Long articleId) {
+    @Transactional
+    protected CompletableFuture<Article> getArticle(Long boardId, Long articleId) throws JsonProcessingException {
         Optional<Board> board = boardRepository.findById(boardId);
         if (board.isEmpty()) {
             throw new ResourceNotFoundException("board not found");
@@ -187,6 +197,10 @@ public class CommentService {
         if (article.isEmpty() || article.get().getIsDeleted()) {
             throw new ResourceNotFoundException("article not found");
         }
+        article.get().setViewCount(article.get().getViewCount() + 1);
+        articleRepository.save(article.get());
+        String articleJson = objectMapper.writeValueAsString(article.get());
+        elasticSearchService.indexArticleDocument(article.get().getId().toString(), articleJson).block();
         return CompletableFuture.completedFuture(article.get());
     }
 
@@ -195,7 +209,7 @@ public class CommentService {
         return CompletableFuture.completedFuture(commentRepository.findByArticleId(articleId));
     }
 
-    public CompletableFuture<Article> getArticleWithComment(Long boardId, Long articleId) {
+    public CompletableFuture<Article> getArticleWithComment(Long boardId, Long articleId) throws JsonProcessingException {
         CompletableFuture<Article> articleFuture = this.getArticle(boardId, articleId);
         CompletableFuture<List<Comment>> commentsFuture = this.getComments(articleId);
 
