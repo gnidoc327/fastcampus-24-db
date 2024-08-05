@@ -51,9 +51,17 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+  mongodb:
+    image: mongo:7
+    container_name: mongodb-server
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
 
 volumes:
   db_data:
   es-data:
     driver: local
   redis-data:
+  mongo-data:
