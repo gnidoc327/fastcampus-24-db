@@ -9,6 +9,7 @@ import com.onion.backend.entity.Article;
 import com.onion.backend.service.AdvertisementService;
 import com.onion.backend.service.ArticleService;
 import com.onion.backend.service.CommentService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/api/ads")
+@RequestMapping("/api")
 public class AdvertisementController {
     private final AdvertisementService advertisementService;
 
@@ -28,24 +29,32 @@ public class AdvertisementController {
         this.advertisementService = advertisementService;
     }
 
-    @PostMapping("")
+    @PostMapping("/admin/ads")
     public ResponseEntity<Advertisement> writeAd(@RequestBody AdvertisementDto advertisementDto) {
         Advertisement advertisement = advertisementService.writeAd(advertisementDto);
         return ResponseEntity.ok(advertisement);
     }
 
-    @GetMapping("")
+    @GetMapping("/ads")
     public ResponseEntity<List<Advertisement>> getAdList() {
         List<Advertisement> advertisementList = advertisementService.getAdList();
         return ResponseEntity.ok(advertisementList);
     }
 
-    @GetMapping("/{adId}")
-    public Object getAdList(@PathVariable Long adId) {
-        Optional<Advertisement> advertisement = advertisementService.getAd(adId);
+    @GetMapping("/ads/{adId}")
+    public Object getAdList(@PathVariable Long adId, HttpServletRequest request, @RequestParam(required = false) Boolean isTrueView) {
+        String ipAddress = request.getRemoteAddr();
+        Optional<Advertisement> advertisement = advertisementService.getAd(adId, ipAddress, isTrueView != null && isTrueView);
         if (advertisement.isEmpty()) {
             return ResponseEntity.notFound();
         }
         return ResponseEntity.ok(advertisement);
+    }
+
+    @PostMapping("/ads/{adId}")
+    public Object clickAd(@PathVariable Long adId, HttpServletRequest request) {
+        String ipAddress = request.getRemoteAddr();
+        advertisementService.clickAd(adId, ipAddress);
+        return ResponseEntity.ok("click");
     }
 }
