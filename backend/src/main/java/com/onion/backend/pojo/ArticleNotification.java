@@ -1,4 +1,4 @@
-package com.onion.backend.entity;
+package com.onion.backend.pojo;
 
 import lombok.Data;
 import lombok.Getter;

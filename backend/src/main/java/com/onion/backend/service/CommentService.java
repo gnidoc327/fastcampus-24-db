@@ -12,6 +12,7 @@ import com.onion.backend.entity.User;
 import com.onion.backend.exception.ForbiddenException;
 import com.onion.backend.exception.RateLimitException;
 import com.onion.backend.exception.ResourceNotFoundException;
+import com.onion.backend.pojo.WriteComment;
 import com.onion.backend.repository.ArticleRepository;
 import com.onion.backend.repository.BoardRepository;
 import com.onion.backend.repository.CommentRepository;
@@ -46,15 +47,18 @@ public class CommentService {
 
     private final ObjectMapper objectMapper;
 
+    private final RabbitMQSender rabbitMQSender;
+
     @Autowired
     public CommentService(BoardRepository boardRepository, ArticleRepository articleRepository, UserRepository userRepository, CommentRepository commentRepository,
-                          ElasticSearchService elasticSearchService, ObjectMapper objectMapper) {
+                          ElasticSearchService elasticSearchService, ObjectMapper objectMapper, RabbitMQSender rabbitMQSender) {
         this.boardRepository = boardRepository;
         this.articleRepository = articleRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.elasticSearchService = elasticSearchService;
         this.objectMapper = objectMapper;
+        this.rabbitMQSender = rabbitMQSender;
     }
 
     @Transactional
@@ -84,6 +88,9 @@ public class CommentService {
         comment.setAuthor(author.get());
         comment.setContent(dto.getContent());
         commentRepository.save(comment);
+        WriteComment writeComment = new WriteComment();
+        writeComment.setCommentId(comment.getId());
+        rabbitMQSender.send(writeComment);
         return comment;
     }
 

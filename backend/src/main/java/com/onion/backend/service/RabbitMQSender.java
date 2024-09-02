@@ -1,6 +1,8 @@
 package com.onion.backend.service;
 
-import com.onion.backend.entity.ArticleNotification;
+import com.onion.backend.pojo.ArticleNotification;
+import com.onion.backend.pojo.SendCommentNotification;
+import com.onion.backend.pojo.WriteComment;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -14,5 +16,13 @@ public class RabbitMQSender {
 
     public void send(ArticleNotification articleNotification) {
         rabbitTemplate.convertAndSend("onion-notification", articleNotification.toString());
+    }
+
+    public void send(WriteComment message) {
+        rabbitTemplate.convertAndSend("onion-notification", message.toString());
+    }
+
+    public void send(SendCommentNotification message) {
+        rabbitTemplate.convertAndSend("onion-notification", message.toString());
     }
 }
