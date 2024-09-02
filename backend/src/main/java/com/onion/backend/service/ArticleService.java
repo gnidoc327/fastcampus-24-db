@@ -3,6 +3,7 @@ package com.onion.backend.service;
 import com.onion.backend.dto.EditArticleDto;
 import com.onion.backend.dto.WriteArticleDto;
 import com.onion.backend.entity.Article;
+import com.onion.backend.entity.ArticleNotification;
 import com.onion.backend.entity.Board;
 import com.onion.backend.entity.User;
 import com.onion.backend.exception.ForbiddenException;
@@ -12,6 +13,7 @@ import com.onion.backend.repository.ArticleRepository;
 import com.onion.backend.repository.BoardRepository;
 import com.onion.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
@@ -41,14 +43,18 @@ public class ArticleService {
 
     private final ObjectMapper objectMapper;
 
+    private final RabbitMQSender rabbitMQSender;
+
     @Autowired
     public ArticleService(BoardRepository boardRepository, ArticleRepository articleRepository, UserRepository userRepository,
-                          ElasticSearchService elasticSearchService, ObjectMapper objectMapper) {
+                          ElasticSearchService elasticSearchService, ObjectMapper objectMapper,
+                          RabbitMQSender rabbitMQSender) {
         this.boardRepository = boardRepository;
         this.articleRepository = articleRepository;
         this.userRepository = userRepository;
         this.elasticSearchService = elasticSearchService;
         this.objectMapper = objectMapper;
+        this.rabbitMQSender = rabbitMQSender;
     }
 
     @Transactional
@@ -73,6 +79,10 @@ public class ArticleService {
         article.setContent(dto.getContent());
         articleRepository.save(article);
         this.indexArticle(article);
+        ArticleNotification articleNotification = new ArticleNotification();
+        articleNotification.setArticleId(article.getId());
+        articleNotification.setUserId(author.get().getId());
+        rabbitMQSender.send(articleNotification);
         return article;
     }
 
