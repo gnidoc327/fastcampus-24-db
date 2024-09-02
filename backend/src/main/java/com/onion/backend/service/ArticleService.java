@@ -3,7 +3,7 @@ package com.onion.backend.service;
 import com.onion.backend.dto.EditArticleDto;
 import com.onion.backend.dto.WriteArticleDto;
 import com.onion.backend.entity.Article;
-import com.onion.backend.pojo.ArticleNotification;
+import com.onion.backend.pojo.WriteArticle;
 import com.onion.backend.entity.Board;
 import com.onion.backend.entity.User;
 import com.onion.backend.exception.ForbiddenException;
@@ -77,7 +77,7 @@ public class ArticleService {
         article.setContent(dto.getContent());
         articleRepository.save(article);
         this.indexArticle(article);
-        ArticleNotification articleNotification = new ArticleNotification();
+        WriteArticle articleNotification = new WriteArticle();
         articleNotification.setArticleId(article.getId());
         articleNotification.setUserId(author.get().getId());
         rabbitMQSender.send(articleNotification);

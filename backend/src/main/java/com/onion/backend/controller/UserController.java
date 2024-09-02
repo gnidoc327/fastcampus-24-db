@@ -5,6 +5,7 @@ import com.onion.backend.entity.User;
 import com.onion.backend.jwt.JwtUtil;
 import com.onion.backend.service.CustomUserDetailsService;
 import com.onion.backend.service.JwtBlacklistService;
+import com.onion.backend.service.UserNotificationHistoryService;
 import com.onion.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.Cookie;
@@ -36,14 +37,18 @@ public class UserController {
     private final CustomUserDetailsService userDetailsService;
     private final JwtBlacklistService jwtBlacklistService;
 
+    private final UserNotificationHistoryService userNotificationHistoryService;
 
     @Autowired
-    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, JwtBlacklistService jwtBlacklistService) {
+    public UserController(UserService userService, AuthenticationManager authenticationManager, JwtUtil jwtUtil,
+                          CustomUserDetailsService userDetailsService, JwtBlacklistService jwtBlacklistService,
+                          UserNotificationHistoryService userNotificationHistoryService) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
         this.jwtBlacklistService = jwtBlacklistService;
+        this.userNotificationHistoryService = userNotificationHistoryService;
     }
 
     @GetMapping("")
@@ -116,5 +121,11 @@ public class UserController {
         if (!jwtUtil.validateToken(token)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Token is not validation");
         }
+    }
+
+    @PostMapping("/history")
+    @ResponseStatus(HttpStatus.OK)
+    public void readHistory(@RequestParam String historyId) {
+        userNotificationHistoryService.readNotification(historyId);
     }
 }
