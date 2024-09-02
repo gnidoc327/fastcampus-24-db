@@ -18,6 +18,8 @@ public class UserNotificationHistory {
 
     private String content;
 
+    private Long noticeId;
+
     private Long userId;
 
     private Boolean isRead = false;

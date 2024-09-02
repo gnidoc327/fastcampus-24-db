@@ -58,6 +58,7 @@ public class NoticeService {
         userNotificationHistory.setContent(notice.get().getTitle());
         userNotificationHistory.setUserId(user.get().getId());
         userNotificationHistory.setIsRead(true);
+        userNotificationHistory.setNoticeId(noticeId);
         userNotificationHistory.setCreatedDate(notice.get().getCreatedDate());
         userNotificationHistory.setUpdatedDate(LocalDateTime.now());
         userNotificationHistoryRepository.save(userNotificationHistory);
