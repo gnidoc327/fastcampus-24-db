@@ -11,7 +11,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Getter
@@ -36,6 +38,10 @@ public class User implements UserDetails {
 
     private LocalDateTime lastLogin;
 
+    @Column(columnDefinition = "json")
+    @Convert(converter = DeviceListConverter.class)
+    private List<Device> deviceList = new ArrayList<>();
+
     @CreatedDate
     @Column(insertable = true)
     private LocalDateTime createdDate;
@@ -46,6 +52,9 @@ public class User implements UserDetails {
     @PrePersist
     protected void onCreate() {
         this.createdDate = LocalDateTime.now();
+        if (deviceList == null) {
+            deviceList = new ArrayList<>(); // 기본값을 빈 배열로 설정
+        }
     }
 
     @PreUpdate
