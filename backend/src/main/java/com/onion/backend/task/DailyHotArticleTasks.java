@@ -13,7 +13,8 @@ import java.time.LocalTime;
 
 @Component
 public class DailyHotArticleTasks {
-    private static final String REDIS_KEY = "hot-article:";
+    public static final String YESTERDAY_REDIS_KEY = "yesterday-hot-article:";
+    public static final String WEEK_REDIS_KEY = "week-hot-article:";
 
     private final ArticleRepository articleRepository;
 
@@ -25,7 +26,7 @@ public class DailyHotArticleTasks {
     }
 
 
-    @Scheduled(cron = "15 23 07 * * ?")
+    @Scheduled(cron = "50 26 07 * * ?")
     public void pickYesterdayHotArticle() {
         LocalDateTime startDate = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN);
         LocalDateTime endDate = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
@@ -41,6 +42,25 @@ public class DailyHotArticleTasks {
         hotArticle.setCreatedDate(article.getCreatedDate());
         hotArticle.setUpdatedDate(article.getUpdatedDate());
         hotArticle.setViewCount(article.getViewCount());
-        redisTemplate.opsForHash().put(REDIS_KEY + article.getId(), article.getId(), hotArticle);
+        redisTemplate.opsForHash().put(YESTERDAY_REDIS_KEY + article.getId(), article.getId(), hotArticle);
+    }
+
+    @Scheduled(cron = "20 28 07 * * ?")
+    public void pickWeekHotArticle() {
+        LocalDateTime startDate = LocalDateTime.of(LocalDate.now().minusDays(8), LocalTime.MIN);
+        LocalDateTime endDate = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN);
+        Article article = articleRepository.findHotArticle(startDate, endDate);
+        if (article == null) {
+            return;
+        }
+        HotArticle hotArticle = new HotArticle();
+        hotArticle.setId(article.getId());
+        hotArticle.setTitle(article.getTitle());
+        hotArticle.setContent(article.getContent());
+        hotArticle.setAuthorName(article.getAuthor().getUsername());
+        hotArticle.setCreatedDate(article.getCreatedDate());
+        hotArticle.setUpdatedDate(article.getUpdatedDate());
+        hotArticle.setViewCount(article.getViewCount());
+        redisTemplate.opsForHash().put(WEEK_REDIS_KEY + article.getId(), article.getId(), hotArticle);
     }
 }
