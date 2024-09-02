@@ -23,6 +23,6 @@ public class RabbitMQSender {
     }
 
     public void send(SendCommentNotification message) {
-        rabbitTemplate.convertAndSend("onion-notification", message.toString());
+        rabbitTemplate.convertAndSend("send_notification_exchange", "", message.toString());
     }
 }
