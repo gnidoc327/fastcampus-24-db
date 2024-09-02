@@ -1,23 +1,16 @@
 package com.onion.backend.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.onion.backend.dto.AdHistoryResult;
 import com.onion.backend.dto.AdvertisementDto;
-import com.onion.backend.dto.EditArticleDto;
-import com.onion.backend.dto.WriteArticleDto;
 import com.onion.backend.entity.Advertisement;
-import com.onion.backend.entity.Article;
 import com.onion.backend.service.AdvertisementService;
-import com.onion.backend.service.ArticleService;
-import com.onion.backend.service.CommentService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api")
@@ -56,5 +49,12 @@ public class AdvertisementController {
         String ipAddress = request.getRemoteAddr();
         advertisementService.clickAd(adId, ipAddress);
         return ResponseEntity.ok("click");
+    }
+
+    @GetMapping("/ads/history")
+    public ResponseEntity<List<AdHistoryResult>> getAdHistory() {
+        List<AdHistoryResult> result = advertisementService.getAdViewHistoryGroupedByAdId();
+        advertisementService.insertAdViewStat(result);
+        return ResponseEntity.ok(result);
     }
 }

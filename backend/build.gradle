@@ -41,6 +41,9 @@ dependencies {
 	// mongodb
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
+	// Spring Batch
+	implementation 'org.springframework.boot:spring-boot-starter-batch'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
