@@ -44,6 +44,20 @@ services:
       ELASTICSEARCH_HOSTS: http://elasticsearch:9200
     ports:
       - "5601:5601"
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.5.0
+    container_name: logstash
+    environment:
+      - xpack.monitoring.enabled=false
+      - LOGSTASH_JAVA_OPTS=-Xms512m -Xmx512m
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logstash/mysql-connector-j-9.0.0.jar:/usr/share/logstash/mysql-connector-j-9.0.0.jar
+    ports:
+      - "5044:5044"
+      - "9600:9600"  # Logstash monitoring API
+
   redis:
     image: redis:7
     container_name: redis-server
