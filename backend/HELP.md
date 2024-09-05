@@ -20,3 +20,13 @@ These additional references should also help you:
 
 * [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
 
+
+
+project: 43.200.2.206
+locust: 43.203.227.187
+
+43.200.2.206:5601
+43.200.2.206:15672
+43.200.2.206:8080
+
+docker context create docker-ec2 --docker host=tcp://43.200.2.206:2375
