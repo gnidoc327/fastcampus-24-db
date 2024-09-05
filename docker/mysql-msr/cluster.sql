@@ -4,7 +4,7 @@ FLUSH PRIVILEGES;
 SHOW MASTER STATUS;
 
 -- 2. Slave 서버 SQL
--- STOP SLAVE;
+-- STOP SLAVE FOR CHANNEL 'master_b_channel';
 -- RESET SLAVE ALL;
 CHANGE MASTER TO
     MASTER_HOST='mysql-master-a',
