@@ -1,0 +1,46 @@
+services:
+  mysql-master:
+    image: mysql:5.7
+    restart: always
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: onion1!
+      MYSQL_DATABASE: onion-db
+      MYSQL_USER: onion-user
+      MYSQL_PASSWORD: onion1!
+    ports:
+      - "13306:3306"
+    volumes:
+      - db_data_master:/var/lib/mysql
+    command:
+      --server-id=1
+      --log-bin=mysql-bin
+      --binlog-format=row
+    networks:
+      - mysql-network
+  mysql-slave:
+    image: mysql:5.7
+    restart: always
+    platform: linux/amd64
+    environment:
+      MYSQL_ROOT_PASSWORD: onion1!
+      MYSQL_DATABASE: onion-db
+      MYSQL_USER: onion-user
+      MYSQL_PASSWORD: onion1!
+    ports:
+      - "13307:3306"
+    volumes:
+      - db_data_slave:/var/lib/mysql
+    command:
+      --server-id=2
+      --log-bin=mysql-bin
+      --binlog-format=row
+    networks:
+      - mysql-network
+volumes:
+  db_data_master:
+  db_data_slave:
+
+networks:
+  mysql-network:
+    driver: bridge
