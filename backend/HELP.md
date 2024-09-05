@@ -23,7 +23,7 @@ These additional references should also help you:
 
 
 project: 43.200.2.206
-locust: 43.203.227.187
+locust: 43.201.49.11
 
 43.200.2.206:5601
 43.200.2.206:15672

@@ -1,0 +1,3 @@
+db.getProfilingStatus()
+db.setProfilingLevel(1, { slowms: 50 })
+db.system.profile.find().sort({ ts: -1 }).limit(5).pretty()
